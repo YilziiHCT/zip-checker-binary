@@ -38,16 +38,15 @@ except Exception:
     print("Module 'tabulate' belum terpasang. Jalankan: pip install tabulate")
     sys.exit(1)
 
-# optional: docx reader
 DOCX_AVAILABLE = False
 try:
-    from docx import Document  # python-docx
+    from docx import Document 
     DOCX_AVAILABLE = True
 except Exception:
     DOCX_AVAILABLE = False
 
 
-MAX_READ_BYTES = 5 * 1024 * 1024   # read max 5MB per file untuk analisis (configurable)
+MAX_READ_BYTES = 5 * 1024 * 1024   
 BRAND = "Yilzi Dev"
 DEFAULT_OUTPUT_PREFIX = "data_file_yilzidev"
 SUSPICIOUS_EXT = {".exe", ".dll", ".bat", ".cmd", ".sh", ".js", ".vbs", ".ps1", ".scr"}
@@ -113,7 +112,6 @@ def analyze_content_bytes(b: bytes) -> Dict[str, Any]:
         matches = pat.findall(b_sample)
         findings[name] = len(matches)
         total_matches += len(matches)
-    # detect long lines (possible obfuscation)
     long_lines = sum(1 for line in b_sample.splitlines() if len(line) > 400)
     findings["long_lines"] = long_lines
     findings["entropy"] = ent
@@ -142,14 +140,12 @@ def detect_language_by_name_and_content(name: str, b: bytes) -> str:
         return "Text/Markdown"
     if ext in {".docx"}:
         return "DOCX"
-    # fallback: check for shebang or keywords
     text_head = b[:256].decode(errors="ignore")
     if text_head.startswith("#!"):
         if "python" in text_head:
             return "Python (script)"
         if "bash" in text_head:
             return "Shell (script)"
-    # simple heuristics
     if b.find(b"def ")!=-1 or b.find(b"import ")!=-1:
         return "Python-like"
     if b.find(b"function ")!=-1 or b.find(b"console.log")!=-1:
@@ -301,7 +297,7 @@ def print_progress(i: int, total: int, prefix="Proses"):
     bar = "[" + "#"*filled + "-"*(bar_len-filled) + "]"
     print(f"\r{prefix}: {bar} {i}/{total} ({pct}%)", end="", flush=True)
     if i==total:
-        print()  # newline
+        print()
 
 def summary_from_results(results: List[Dict[str,Any]]) -> Dict[str,Any]:
     total = len(results)
@@ -362,7 +358,6 @@ def save_report_text(results: List[Dict[str,Any]], outpath: str):
     print(f"[+] Laporan teks disimpan ke: {outpath}")
 
 def save_report_json(results: List[Dict[str,Any]], outpath: str):
-    # make JSON serializable & safe untuk binary data
     safe = []
     for r in results:
         safe.append({
